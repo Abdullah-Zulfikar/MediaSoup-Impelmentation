@@ -1,5 +1,8 @@
 import WebSocket from "ws";
 import { v4 as uuidv4 } from "uuid";
+import { Device } from 'mediasoup-client';
+
+
 
 let bntSub;
 let bntCam;
@@ -34,9 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // button event listners
-    bntCam.addEventListener('click', console.log("can button clicked"))
-    bntScreen.addEventListener('click', console.log("clicked pub screen button"))
-    bntScreen.addEventListener('click', console.log("sub Button clciked!"))
+    bntCam.addEventListener('click', publish)
+    bntScreen.addEventListener('click', publish)
+    bntScreen.addEventListener('click', publish)
 }) 
 
 const connect = () => {
@@ -69,8 +72,26 @@ const connect = () => {
             }
     }
 
-    const onRouterCapabilities = () => {
+    const publish = (e) => {
+        isWebcam = (e.target.id === 'btn_webcam')
+        textPublish = isWebcam ? textWebcam : textScreen;
+        bntScreen.disable = true;
+        bntCam.disable = true;
 
+
+        const message = {
+            type : 'createProducerTransport',
+            forceTcp: false,
+            rtpCapabilities: device.rtpCapabilities
+        }
+
+        const resp = JSON.stringify(message);
+        socket.send(resp)
+    }
+
+    const onRouterCapabilities = (resp) => {
+        loadDevice(resp.data);
+        bntCam.disable = false
     }
 
     const IsJsonString= (str) => {
@@ -83,7 +104,14 @@ const connect = () => {
     }
 
     const loadDevice = async(routerRtpCapabilities) => {
-
+        try {
+            device = new Device()
+        } catch (error) {
+            if (error.name === 'UnsupportedError'){
+                console.log("Browser Not supported!")
+            }
+        }
+        await device.load({ routerRtpCapabilities});
     }
 }
 
