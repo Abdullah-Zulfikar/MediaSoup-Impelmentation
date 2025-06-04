@@ -1,6 +1,43 @@
 import WebSocket from "ws";
+import { v4 as uuidv4 } from "uuid";
 
+let bntSub;
+let bntCam;
+let bntScreen;
+let textPublish
+let textWebcam;
+let textScreen;
+let textSubscribe;
+let localVideo;
+let remoteVideo;
+let remoteStream;
+let device;
+let producer;
+let consumeTransport;
+let userId;
+let isWebcam;
+let produceCallback, produceErrback;
+let consumerCallback, ConsumerErrback;
 const websocketURL = "ws://localhost:8000/ws"
+
+let socket;
+
+document.addEventListener('DOMContentLoaded', function() {
+    bntCam = document.getElementById('btn_webcam')
+    bntScreen = document.getElementById('btn_screen')
+    bntSub = document.getElementById('btn_sub')
+    textWebcam = document.getElementById('webcam_status')
+    textScreen = document.getElementById('screen_status')
+    textSubscribe = document.getElementById('subscribe_status')
+    localVideo = document.getElementById('localVideo')
+    remoteVideo = document.getElementById('remoteViode')
+
+
+    // button event listners
+    bntCam.addEventListener('click', console.log("can button clicked"))
+    bntScreen.addEventListener('click', console.log("clicked pub screen button"))
+    bntScreen.addEventListener('click', console.log("sub Button clciked!"))
+}) 
 
 const connect = () => {
     const socket = new WebSocket(websocketURL);
@@ -11,6 +48,42 @@ const connect = () => {
         }
         const resp = JSON.stringify(msg);
         socket.send(resp)
+    }
+
+
+    socket.onmessage = (event) => {
+        const jsonValidation = IsJsonString(message)
+            if (!jsonValidation) {
+                console.error("json error");
+                return
+            } 
+
+            let resp = JSON.parse(event.data);
+            switch (resp.type) {
+                case "routerCapabilities":
+                    onRouterCapabilities(resp)
+                    break;
+            
+                default:
+                    break;
+            }
+    }
+
+    const onRouterCapabilities = () => {
+
+    }
+
+    const IsJsonString= (str) => {
+    try{
+        JSON.parse(str)
+    }catch(error) {
+        return false;
+    }
+        return true
+    }
+
+    const loadDevice = async(routerRtpCapabilities) => {
+
     }
 }
 
